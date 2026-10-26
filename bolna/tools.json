@@ -1,0 +1,114 @@
+[
+  {
+    "name": "get_shop_context",
+    "description": "Call this first, as soon as the shopkeeper answers. Returns who the shop is, last week's order, overdue credit, current offers, out-of-stock items and the full product catalog with codes and prices.",
+    "pre_call_message": "",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "from_number": { "type": "string", "description": "The from_number given in the call details" },
+        "to_number": { "type": "string", "description": "The to_number given in the call details" },
+        "execution_id": { "type": "string", "description": "The execution_id given in the call details" }
+      },
+      "required": ["from_number", "to_number", "execution_id"]
+    },
+    "key": "custom_task",
+    "value": {
+      "method": "POST",
+      "param": {
+        "from_number": "%(from_number)s",
+        "to_number": "%(to_number)s",
+        "execution_id": "%(execution_id)s"
+      },
+      "url": "https://YOUR-APP.vercel.app/api/agent/shop",
+      "api_token": "Bearer YOUR_AGENT_TOKEN",
+      "headers": { "Content-Type": "application/json" }
+    }
+  },
+  {
+    "name": "place_order",
+    "description": "Book the shop's order once they have said everything they want. Pass every item as CODE:quantity separated by commas, using product codes from the catalog, e.g. PG100:12, MG70:3. Calling it again in the same call replaces the earlier order, so always send the full list.",
+    "pre_call_message": "",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "items": { "type": "string", "description": "Full order as CODE:quantity, comma separated. Quantity is in the catalog pack unit (box, case, bag, carton, crate)." },
+        "from_number": { "type": "string", "description": "The from_number given in the call details" },
+        "to_number": { "type": "string", "description": "The to_number given in the call details" },
+        "execution_id": { "type": "string", "description": "The execution_id given in the call details" }
+      },
+      "required": ["items", "from_number", "to_number", "execution_id"]
+    },
+    "key": "custom_task",
+    "value": {
+      "method": "POST",
+      "param": {
+        "items": "%(items)s",
+        "from_number": "%(from_number)s",
+        "to_number": "%(to_number)s",
+        "execution_id": "%(execution_id)s"
+      },
+      "url": "https://YOUR-APP.vercel.app/api/agent/order",
+      "api_token": "Bearer YOUR_AGENT_TOKEN",
+      "headers": { "Content-Type": "application/json" }
+    }
+  },
+  {
+    "name": "log_payment_promise",
+    "description": "Record when the shopkeeper will pay their overdue balance. Only use after they have named an amount and a date.",
+    "pre_call_message": "",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "amount": { "type": "string", "description": "Rupees they will pay, digits only, e.g. 4800" },
+        "promise_date": { "type": "string", "description": "Date they will pay, as YYYY-MM-DD" },
+        "from_number": { "type": "string", "description": "The from_number given in the call details" },
+        "to_number": { "type": "string", "description": "The to_number given in the call details" },
+        "execution_id": { "type": "string", "description": "The execution_id given in the call details" }
+      },
+      "required": ["amount", "promise_date", "from_number", "to_number", "execution_id"]
+    },
+    "key": "custom_task",
+    "value": {
+      "method": "POST",
+      "param": {
+        "amount": "%(amount)s",
+        "promise_date": "%(promise_date)s",
+        "from_number": "%(from_number)s",
+        "to_number": "%(to_number)s",
+        "execution_id": "%(execution_id)s"
+      },
+      "url": "https://YOUR-APP.vercel.app/api/agent/payment",
+      "api_token": "Bearer YOUR_AGENT_TOKEN",
+      "headers": { "Content-Type": "application/json" }
+    }
+  },
+  {
+    "name": "schedule_callback",
+    "description": "Use when the shopkeeper is busy or asks to be called later. Ask what time first.",
+    "pre_call_message": "",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "callback_at": { "type": "string", "description": "When to call back, as YYYY-MM-DDTHH:MM in India time" },
+        "from_number": { "type": "string", "description": "The from_number given in the call details" },
+        "to_number": { "type": "string", "description": "The to_number given in the call details" },
+        "execution_id": { "type": "string", "description": "The execution_id given in the call details" }
+      },
+      "required": ["callback_at", "from_number", "to_number", "execution_id"]
+    },
+    "key": "custom_task",
+    "value": {
+      "method": "POST",
+      "param": {
+        "callback_at": "%(callback_at)s",
+        "from_number": "%(from_number)s",
+        "to_number": "%(to_number)s",
+        "execution_id": "%(execution_id)s"
+      },
+      "url": "https://YOUR-APP.vercel.app/api/agent/callback",
+      "api_token": "Bearer YOUR_AGENT_TOKEN",
+      "headers": { "Content-Type": "application/json" }
+    }
+  }
+]
