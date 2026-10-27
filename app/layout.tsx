@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Beat · Voice order desk for FMCG distributors",
-  description: "Beat phones every kirana shop on your route in Kannada, Hindi, Telugu, Tamil or Malayalam, takes the restock order, applies your schemes and follows up on credit.",
+  description: "Beat phones every kirana shop on your route in Kannada or English, takes the restock order, applies your schemes and follows up on credit.",
 };
 
 export const viewport: Viewport = {

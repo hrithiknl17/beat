@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, CircleAlert, LogOut } from "lucide-react";
 import { useBeat } from "@/components/data";
 import { Field, Loading, PageHead } from "@/components/ui";
-import { LANG_CODES, LANGUAGES } from "@/lib/lang";
+import { LANGUAGES, OFFERED } from "@/lib/lang";
 
 export default function Settings() {
   const { data, act, notify } = useBeat();
@@ -67,12 +67,12 @@ export default function Settings() {
               ? <p className="ok-line"><Check /> Outbound calls are on. Start beat and Call now will ring shops.</p>
               : <p className="warn-line"><CircleAlert /> Outbound calls are off. Shops can still ring your Beat number. To call out, the Bolna API key and agent IDs must be set on the server.</p>}
             <div className="lang-list">
-              {LANG_CODES.map((c) => {
-                const on = data.agent_languages.includes(c);
+              {OFFERED.map((c) => {
+                const on = data.can_call && (data.agent_languages.includes(c) || data.agent_languages.includes("kn"));
                 return <span key={c} className={on ? "on" : ""}>{on ? <Check /> : null}{LANGUAGES[c]}</span>;
               })}
             </div>
-            <small className="muted">A green language has its own Bolna agent. Shops in other languages are called by the default agent.</small>
+            <small className="muted">Beat opens in Kannada and switches to English when the shopkeeper does.</small>
           </div>
 
           <div className="panel pad">

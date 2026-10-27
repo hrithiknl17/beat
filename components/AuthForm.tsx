@@ -35,7 +35,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           <h2>Your weekly beat, done by phone.</h2>
           <p>Beat calls every kirana shop on your route in their language, takes the order, applies your schemes and asks for overdue payments. You watch it arrive here.</p>
           <ul>
-            <li>Kannada, Hindi, Telugu, Tamil and Malayalam</li>
+            <li>Speaks Kannada, switches to English when they do</li>
             <li>Orders priced against your own catalog</li>
             <li>Credit, promises and callbacks tracked for you</li>
           </ul>

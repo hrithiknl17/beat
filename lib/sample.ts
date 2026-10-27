@@ -35,13 +35,13 @@ export const STARTER_PRODUCTS: Product[] = [
   { code: "DMK", name: "Dairy Milk Rs 20", pack: "box of 24", price: 450 },
 ];
 
-/** Five shops, one per call language, each with last week's salesman order. Numbers are placeholders until you add real ones. */
+/** Five Bengaluru shops, each with last week's salesman order. Numbers are placeholders until you add real ones. */
 const SAMPLE_SHOPS = [
   { name: "Sri Lakshmi Stores", owner: "Ramesh Gowda", area: "Basavanagudi", lang: "kn", due: 4800, dueDays: 18, last: [["PG100", 10], ["MG70", 2], ["TSALT", 2]] },
-  { name: "Sharma General Store", owner: "Rajesh Sharma", area: "BTM Layout", lang: "hi", due: 0, dueDays: 0, last: [["TTP", 1], ["KRK", 4], ["LAYS", 4]] },
-  { name: "Venkateswara Kirana", owner: "Srinivas Reddy", area: "KR Puram", lang: "te", due: 12300, dueDays: 34, last: [["MG70", 3], ["THU", 2], ["DMK", 2]] },
-  { name: "Murugan Stores", owner: "Selvam", area: "Ulsoor", lang: "ta", due: 0, dueDays: 0, last: [["AA5", 12], ["FSO", 2]] },
-  { name: "Kerala Provision Store", owner: "Biju Thomas", area: "Koramangala", lang: "ml", due: 2150, dueDays: 9, last: [["MRG", 3], ["BRU", 1], ["SRF", 1]] },
+  { name: "Sharma General Store", owner: "Rajesh Sharma", area: "BTM Layout", lang: "en", due: 0, dueDays: 0, last: [["TTP", 1], ["KRK", 4], ["LAYS", 4]] },
+  { name: "Manjunatha Provisions", owner: "Manjunath", area: "Rajajinagar", lang: "kn", due: 12300, dueDays: 34, last: [["MG70", 3], ["THU", 2], ["DMK", 2]] },
+  { name: "Al-Ameen Kirana", owner: "Imran", area: "Shivajinagar", lang: "en", due: 0, dueDays: 0, last: [["AA5", 12], ["FSO", 2]] },
+  { name: "Annapoorna Super Mart", owner: "Lakshmamma", area: "Malleshwaram", lang: "kn", due: 2150, dueDays: 9, last: [["MRG", 3], ["BRU", 1], ["SRF", 1]] },
 ] as const;
 
 export async function loadStarterCatalog(distributorId: number) {

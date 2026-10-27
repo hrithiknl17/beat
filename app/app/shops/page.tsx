@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { Pause, Pencil, Phone, Play, Plus, Search, Store, Trash2 } from "lucide-react";
 import { ago, inr, initials, overdueDays, tail, tone, useBeat, type Shop } from "@/components/data";
 import { CallState, Empty, Field, Loading, Modal, PageHead, Tabs } from "@/components/ui";
-import { LANG_CODES, LANGUAGES, langName } from "@/lib/lang";
+import { LANG_CODES, LANGUAGES, OFFERED, langName } from "@/lib/lang";
 
 type Filter = "all" | "new" | "owing" | "paused";
 type Form = { name: string; owner_name: string; phone: string; area: string; language: string; credit_due: string; notes: string };
@@ -135,7 +135,7 @@ export default function Shops() {
             <Field label="Area"><input value={f.area} onChange={set("area")} placeholder="Basavanagudi" /></Field>
             <Field label="Call language">
               <select value={f.language} onChange={set("language")}>
-                {LANG_CODES.map((c) => <option key={c} value={c}>{LANGUAGES[c]}{data.agent_languages.length && !data.agent_languages.includes(c) ? " (no agent yet)" : ""}</option>)}
+                {LANG_CODES.filter((c) => OFFERED.includes(c) || c === f.language).map((c) => <option key={c} value={c}>{LANGUAGES[c]}</option>)}
               </select>
             </Field>
             <Field label="Credit due (₹)" hint="What they owe you today."><input inputMode="numeric" value={f.credit_due} onChange={set("credit_due")} placeholder="0" /></Field>

@@ -12,6 +12,12 @@ export type LangCode = keyof typeof LANGUAGES;
 
 export const LANG_CODES = Object.keys(LANGUAGES) as LangCode[];
 
+/**
+ * Languages offered in the dashboard today: Kannada first, English when the shopkeeper switches.
+ * The others stay supported end to end; add one here once its Bolna agent is set up.
+ */
+export const OFFERED: LangCode[] = ["kn", "en"];
+
 export const isLang = (v: unknown): v is LangCode => typeof v === "string" && v in LANGUAGES;
 
 export const langName = (code: string) => (LANGUAGES as Record<string, string>)[code] ?? code;

@@ -10,7 +10,7 @@ const FEATURES = [
   { icon: PackageX, title: "Handles out-of-stock", text: "When something is short this week, it offers the substitute you picked instead of losing the line." },
   { icon: WalletCards, title: "Follows up on credit", text: "Asks overdue shops for a payment date, politely, and logs the promise for you to track." },
   { icon: Clock3, title: "Calls back when asked", text: "Busy shopkeeper? Beat books a time and rings back then." },
-  { icon: Languages, title: "Speaks their language", text: "Kannada, Hindi, Telugu, Tamil and Malayalam, the way shopkeepers actually talk." },
+  { icon: Languages, title: "Speaks their language", text: "Everyday Kannada, the way Bengaluru shopkeepers actually talk, and English when they switch." },
 ];
 
 export default async function Landing() {

@@ -2,7 +2,7 @@
 
 A voice order desk for FMCG distributors in India, built on [Bolna](https://bolna.ai).
 
-Distributors send salesmen to visit kirana shops on a fixed route (a "beat") to take restock orders. Beat phones each shop instead, in Kannada, Hindi, Telugu, Tamil or Malayalam. On every call it:
+Distributors send salesmen to visit kirana shops on a fixed route (a "beat") to take restock orders. Beat phones each shop instead. It's built in Bengaluru for Bengaluru: it speaks everyday Kannada and switches to English when the shopkeeper does. Calls are routed by each shop's language, so Hindi, Telugu, Tamil and Malayalam are one more Bolna agent each (prompts for all five are in `bolna/`). On every call it:
 
 - greets the owner by name and reads back the last order
 - takes this week's order and prices it against the distributor's own catalog
@@ -75,7 +75,7 @@ BASE_URL=http://localhost:3000 AGENT_TOKEN=local-dev-token npm run test:agent
 
 | Tab | Setting |
 | --- | --- |
-| Agent | Prompt: paste `bolna/agent-prompt-<language>.md`. Welcome message: the line in the comment at the top of that file. |
+| Agent | Prompt: paste `bolna/agent-prompt-<language>.md` (kept under Bolna's draft size limit). Welcome message: `bolna/welcome-<language>.txt`. |
 | Transcriber | Sarvam, language `kn` / `hi` / `te` / `ta` / `ml`. Add brand names as keywords: Parle-G, Maggi, Aashirvaad, Kurkure, Britannia, Good Day, Fortune, Tata Salt, Surf Excel, Colgate, Lifebuoy… |
 | Voice | Sarvam bulbul, a voice for that language |
 | Tools | Add each object in `bolna/tools.json` as a custom function. Replace `YOUR-APP.vercel.app` and `YOUR_AGENT_TOKEN`. |
