@@ -2,8 +2,11 @@ node_modules
 .next
 .env
 .env.local
+.env*.local
 *.tsbuildinfo
 next-env.d.ts
 .vercel
 # Design reference handed over as a zip; not part of the app
 *.zip
+
+.vercel
