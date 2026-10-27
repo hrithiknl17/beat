@@ -110,5 +110,39 @@
       "api_token": "Bearer YOUR_AGENT_TOKEN",
       "headers": { "Content-Type": "application/json" }
     }
+  },
+  {
+    "name": "register_shop",
+    "description": "Use only when get_shop_context says new_shop is true. After the caller tells you their shop name, owner name and area, save them with this tool.",
+    "pre_call_message": "",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "shop_name": { "type": "string", "description": "Name of the shop, as the caller said it" },
+        "owner_name": { "type": "string", "description": "The owner's name" },
+        "area": { "type": "string", "description": "Area or locality of the shop" },
+        "language": { "type": "string", "description": "The language you are speaking with them: Kannada, Hindi, Telugu, Tamil, Malayalam or English" },
+        "from_number": { "type": "string", "description": "The from_number given in the call details" },
+        "to_number": { "type": "string", "description": "The to_number given in the call details" },
+        "execution_id": { "type": "string", "description": "The execution_id given in the call details" }
+      },
+      "required": ["shop_name", "from_number", "to_number", "execution_id"]
+    },
+    "key": "custom_task",
+    "value": {
+      "method": "POST",
+      "param": {
+        "shop_name": "%(shop_name)s",
+        "owner_name": "%(owner_name)s",
+        "area": "%(area)s",
+        "language": "%(language)s",
+        "from_number": "%(from_number)s",
+        "to_number": "%(to_number)s",
+        "execution_id": "%(execution_id)s"
+      },
+      "url": "https://YOUR-APP.vercel.app/api/agent/register",
+      "api_token": "Bearer YOUR_AGENT_TOKEN",
+      "headers": { "Content-Type": "application/json" }
+    }
   }
 ]

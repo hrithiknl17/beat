@@ -1,10 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   serverExternalPackages: ["pg"],
-  // The demo reset endpoint reads these SQL files at runtime.
-  outputFileTracingIncludes: {
-    "/api/demo/reset": ["./db/**"],
-  },
+  // A stray package-lock.json in the home folder otherwise makes Next guess the wrong root.
+  outputFileTracingRoot: import.meta.dirname,
 };
 
 export default nextConfig;

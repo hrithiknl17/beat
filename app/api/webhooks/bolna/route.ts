@@ -36,16 +36,35 @@ export async function POST(req: NextRequest) {
 
   const t = body.telephony_data ?? {};
   const direction = t.call_type ?? null;
-  const shopPhone = direction === "inbound" ? phone10(t.from_number) : phone10(t.to_number);
-  const shop = shopPhone ? await one<{ id: number }>("select id from shops where phone = $1", [shopPhone]) : null;
+  const from = phone10(t.from_number);
+  const to = phone10(t.to_number);
+
+  // Usually the call row exists already (we placed it, or a tool call created it). If not, work out whose call it is.
+  let shopId: number | null = null;
+  let distributorId: number | null = null;
+  const known = await one("select 1 from calls where execution_id = $1", [executionId]);
+  if (!known) {
+    const account = direction === "inbound" && to ? await one<{ id: number }>("select id from distributors where phone_number = $1", [to]) : null;
+    const shopPhone = direction === "inbound" ? from : to;
+    const shop = shopPhone
+      ? await one<{ id: number; distributor_id: number }>(
+          `select id, distributor_id from shops where phone = $1 ${account ? "and distributor_id = $2" : ""} order by id limit 1`,
+          account ? [shopPhone, account.id] : [shopPhone],
+        )
+      : null;
+    shopId = shop?.id ?? null;
+    distributorId = shop?.distributor_id ?? account?.id ?? null;
+  }
+
   const status = (body.status ?? "in-progress").toLowerCase();
   const finished = DONE.has(status);
   const duration = Number(body.conversation_duration ?? body.conversation_time ?? t.duration) || null;
 
   await q(
-    `insert into calls (execution_id, shop_id, direction, status, transcript, recording_url, duration_sec, ended_at)
-     values ($1, $2, $3, $4, $5, $6, $7, case when $8 then now() end)
+    `insert into calls (execution_id, distributor_id, shop_id, direction, status, transcript, recording_url, duration_sec, ended_at)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, case when $9 then now() end)
      on conflict (execution_id) do update set
+       distributor_id = coalesce(calls.distributor_id, excluded.distributor_id),
        shop_id       = coalesce(calls.shop_id, excluded.shop_id),
        direction     = coalesce(excluded.direction, calls.direction),
        status        = excluded.status,
@@ -53,7 +72,7 @@ export async function POST(req: NextRequest) {
        recording_url = coalesce(excluded.recording_url, calls.recording_url),
        duration_sec  = coalesce(excluded.duration_sec, calls.duration_sec),
        ended_at      = coalesce(calls.ended_at, excluded.ended_at)`,
-    [executionId, shop?.id ?? null, direction, status, body.transcript ?? null, t.recording_url ?? null, duration ? Math.round(duration) : null, finished],
+    [executionId, distributorId, shopId, direction, status, body.transcript ?? null, t.recording_url ?? null, duration ? Math.round(duration) : null, finished],
   );
   if (finished) {
     await q("update calls set outcome = coalesce(outcome, 'no_order') where execution_id = $1 and status = 'completed'", [executionId]);

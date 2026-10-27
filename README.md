@@ -1,70 +1,89 @@
 # Beat
 
-A voice agent that does an FMCG salesman's weekly beat over the phone.
+A voice order desk for FMCG distributors in India, built on [Bolna](https://bolna.ai).
 
-Distributors in India send salesmen to visit kirana shops on a fixed route (a "beat") to take restock orders. Beat calls each shop instead, in Kannada or Hindi, built on [Bolna](https://bolna.ai). It:
+Distributors send salesmen to visit kirana shops on a fixed route (a "beat") to take restock orders. Beat phones each shop instead, in Kannada, Hindi, Telugu, Tamil or Malayalam. On every call it:
 
-- greets the owner by name and reads back last week's order
-- takes this week's order and prices it against the distributor's catalog
+- greets the owner by name and reads back the last order
+- takes this week's order and prices it against the distributor's own catalog
 - applies trade schemes, and offers a substitute when something is out of stock
 - asks for a payment date when the shop has overdue credit
-- books a callback when the shopkeeper is busy
+- books a callback when the shopkeeper is busy, and rings back at that time
+- registers shops that ring in from a number it doesn't know yet
 
-Every order prints onto a live dashboard while the call is still going.
+Every order prints on the distributor's dashboard while the call is still going.
 
-**Try it:** call the agent's number and play a shopkeeper. Any unknown number becomes a demo copy of Sri Lakshmi Stores, so you hear the whole flow: last order, offers, out-of-stock swap and the overdue balance.
+## The product
+
+| Section | What the distributor does there |
+| --- | --- |
+| **Live beat** | Today's numbers, orders printing live, shops on the route, recent calls, follow-ups. *Start beat* calls every active shop. |
+| **Orders** | Move each order through packed, out for delivery and delivered (cash, or on credit), or cancel it. |
+| **Calls** | Every conversation with its recording and transcript, filterable by outcome. |
+| **Shops** | Add, edit, pause or delete shops. Set each shop's number, language and opening balance. New callers show up here to check. |
+| **Products** | The catalog the agent sells from: price, pack, schemes, stock and substitutes. A 25-product starter catalog is one click away. |
+| **Payments** | Who owes what, promises (open, kept, missed), callbacks, and a record of money received. |
+| **Settings** | Business name, delivery promise, the Beat number, and which language agents are live. |
+
+Each distributor has their own account (email and password). All data is scoped to the account.
 
 ## How it works
 
 ```
-Shopkeeper's phone ── Bolna agent ─────────────────────────────── Beat (Next.js on Vercel)
-                      ears:   Sarvam saaras:v4 (Kannada / Hindi)   /api/agent/shop      shop, last order, credit, catalog
-                      brain:  gpt-5.4-mini                         /api/agent/order     price + book the order
-                      voice:  Sarvam bulbul:v4-flash               /api/agent/payment   payment promise
-                                                                   /api/agent/callback  call me later
-                      post-call webhook ─────────────────────────▶ /api/webhooks/bolna  transcript, recording, status
-Dashboard "Start beat" ─▶ /api/beat ─▶ Bolna /call (one call per shop, agent picked by the shop's language)
+Shopkeeper's phone ── Bolna agent (one per language) ──────────── Beat (Next.js on Vercel + Postgres)
+                      ears:  Sarvam saaras (kn/hi/te/ta/ml)          /api/agent/shop      shop, last order, credit, catalog
+                      brain: LLM                                     /api/agent/order     price + book the order
+                      voice: Sarvam bulbul                           /api/agent/payment   payment promise
+                                                                     /api/agent/callback  call me later
+                                                                     /api/agent/register  new shop rang in
+                      post-call webhook ───────────────────────────▶ /api/webhooks/bolna  transcript, recording, status
+Dashboard "Start beat" ─▶ /api/beat ─▶ Bolna /call (agent picked by the shop's language)
+Cron ─▶ /api/cron/dispatch ─▶ dials callbacks that are due
 ```
 
-All order logic is on the server, not in the prompt: the agent sends `CODE:qty`, and the server checks stock, applies schemes, totals, and tells the agent what to say. Calling `place_order` again on the same call replaces the order, so the agent can fix mistakes mid-call. Postgres holds shops, products, orders, promises and calls.
+All order logic is on the server, not in the prompt: the agent sends `CODE:qty`, and the server checks stock, applies schemes, totals, and tells the agent what to say. Calling `place_order` again on the same call replaces the order, until the warehouse starts packing it.
 
-## Run it
+Inbound calls are routed by the number dialled: each account sets its Beat number in Settings. Outbound calls are tied to the shop when they're placed.
 
-1. **Database.** Create a free Postgres database (Neon works) and copy its connection string.
-2. **Deploy.** Import this repo on Vercel and add the variables from `.env.example`. At minimum: `DATABASE_URL`, `AGENT_TOKEN`, `DASHBOARD_PIN`.
-3. **Load demo data.** `DATABASE_URL=... npm run db:setup`
-4. **Check without a phone.** `BASE_URL=https://your-app.vercel.app AGENT_TOKEN=... npm run test:agent` plays a full call through the API. Open the dashboard to see it.
+## Run it locally
+
+```bash
+npm install
+docker run -d --name beat-pg -e POSTGRES_PASSWORD=beat -e POSTGRES_DB=beat -p 5433:5432 postgres:16-alpine
+echo "DATABASE_URL=postgres://postgres:beat@localhost:5433/beat" > .env.local
+echo "AGENT_TOKEN=local-dev-token" >> .env.local
+DATABASE_URL=postgres://postgres:beat@localhost:5433/beat npm run db:setup
+npm run dev
+```
+
+Open http://localhost:3000, create an account, and load the starter catalog. Then play a whole call through the API, no phone needed:
+
+```bash
+BASE_URL=http://localhost:3000 AGENT_TOKEN=local-dev-token npm run test:agent
+```
+
+## Deploy
+
+1. **Database.** Create a free Postgres database (Neon works), then run `DATABASE_URL=... npm run db:setup`.
+2. **Vercel.** Import the repo and add the variables from `.env.example`. At minimum `DATABASE_URL`, `AGENT_TOKEN` and `CRON_SECRET`.
+3. **Account.** Open the site, sign up, load the starter catalog, add your shops.
+4. **Callbacks.** `vercel.json` runs the dispatcher once a day (the Hobby plan limit). For callbacks on time, point a free scheduler such as cron-job.org at `https://YOUR-APP.vercel.app/api/cron/dispatch?secret=CRON_SECRET` every 5 minutes.
 
 ## Set up the Bolna agents
 
-Create two agents in Bolna: **Beat Kannada** and **Beat Hindi**.
+`npm run prompts` writes one prompt per language into `bolna/`. Create one agent per language you need (**Beat Kannada**, **Beat Hindi**, **Beat Telugu**, **Beat Tamil**, **Beat Malayalam**):
 
 | Tab | Setting |
 | --- | --- |
-| Agent | Prompt: paste `bolna/agent-prompt-kannada.md` (or `-hindi.md`). Welcome message: Kannada `ನಮಸ್ಕಾರ, ಶ್ರೀ ಗಣೇಶ್ ಡಿಸ್ಟ್ರಿಬ್ಯೂಟರ್ಸ್ ಇಂದ ಮಾತಾಡ್ತಾ ಇದೀನಿ. ಈಗ ಮಾತಾಡಬಹುದಾ?` / Hindi `नमस्ते, श्री गणेश डिस्ट्रीब्यूटर्स से बात कर रहे हैं। अभी दो मिनट बात हो सकती है?` |
-| LLM | `gpt-5.4-mini` |
-| Transcriber | Sarvam `saaras:v4`, language `kn` / `hi`, endpointing 500. Keywords: Parle-G, Maggi, Aashirvaad, Kurkure, Puffcorn, Britannia, Marie, Good Day, Hide and Seek, Yippee, Fortune, Gold Winner, Tata Salt, Tata Tea, Red Label, Bru, Colgate, Lifebuoy, Surf Excel, Vim, Lays, Thums Up, Dairy Milk, case, box, carton |
-| Voice | Sarvam `bulbul:v4-flash`, a Kannada / Hindi voice from the Languages tab |
+| Agent | Prompt: paste `bolna/agent-prompt-<language>.md`. Welcome message: the line in the comment at the top of that file. |
+| Transcriber | Sarvam, language `kn` / `hi` / `te` / `ta` / `ml`. Add brand names as keywords: Parle-G, Maggi, Aashirvaad, Kurkure, Britannia, Good Day, Fortune, Tata Salt, Surf Excel, Colgate, Lifebuoy… |
+| Voice | Sarvam bulbul, a voice for that language |
 | Tools | Add each object in `bolna/tools.json` as a custom function. Replace `YOUR-APP.vercel.app` and `YOUR_AGENT_TOKEN`. |
 | Analytics | Webhook URL: `https://YOUR-APP.vercel.app/api/webhooks/bolna?token=YOUR_AGENT_TOKEN` |
 
 Then:
-- Attach a phone number to **Beat Kannada** for inbound calls. That's the number you share with judges.
-- Put the agent IDs and your Bolna API key in Vercel as `BOLNA_AGENT_ID_KN`, `BOLNA_AGENT_ID_HI` and `BOLNA_API_KEY`.
-- On the dashboard, add your own mobile number to a shop and press **Call now**. The agent rings you as that shop.
+- Attach a phone number to one agent for inbound calls, and enter that number as your Beat number in Settings.
+- Put the agent IDs and your Bolna API key in Vercel: `BOLNA_API_KEY`, `BOLNA_AGENT_ID_KN`, `_HI`, `_TE`, `_TA`, `_ML`.
+- Add your own mobile number to a shop and press **Call**. The agent rings you as that shop.
 
-## Demo data
-
-Five shops on a Bengaluru beat, each with last week's order:
-
-| Shop | Area | Language | Credit due |
-| --- | --- | --- | --- |
-| Sri Lakshmi Stores | Basavanagudi | Kannada | ₹4,800 |
-| Balaji Provision Store | Jayanagar | Kannada | Clear |
-| Sharma General Store | BTM Layout | Hindi | Clear |
-| Al-Ameen Kirana | Shivajinagar | Hindi | ₹12,300 |
-| Annapoorna Super Mart | Malleshwaram | Kannada | ₹2,150 |
-
-The catalog has 25 common products. Maggi 70g has a scheme on 3+ cases, Kurkure Puffcorn is a new launch, and Gold Winner oil is out of stock (the agent offers Fortune instead). Prices are illustrative.
-
-**Reset demo** on the dashboard puts everything back. It keeps any real phone numbers you attached to shops.
+Have a native speaker read each prompt's welcome line before going live.

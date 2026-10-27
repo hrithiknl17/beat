@@ -3,27 +3,25 @@ import { NextResponse, type NextRequest } from "next/server";
 /** Bolna sends the custom function's api_token as the Authorization header. */
 export function authorized(req: NextRequest) {
   const token = process.env.AGENT_TOKEN;
-  if (!token) return true; // no token configured: open (local dev)
+  if (!token) return process.env.NODE_ENV !== "production"; // open only in local dev
   const header = req.headers.get("authorization") ?? "";
   return header === `Bearer ${token}` || header === token;
 }
 
-/** Dashboard actions that cost money or change data need DASHBOARD_PIN (sent as x-beat-pin). Viewing stays public. */
-export function adminOk(req: NextRequest) {
-  const pin = process.env.DASHBOARD_PIN;
-  return !pin || req.headers.get("x-beat-pin") === pin;
-}
-
-export function needPin() {
-  return NextResponse.json({ error: "Enter the dashboard PIN to do this." }, { status: 401 });
-}
-
-/** Seeded demo shops use 90000000xx numbers. Those can't be dialled. */
-export const isPlaceholder = (phone: string | null) => !phone || /^90000000\d\d$/.test(phone);
-
 export function denied() {
   return NextResponse.json({ error: "Missing or wrong AGENT_TOKEN in the Authorization header." }, { status: 401 });
 }
+
+export function signedOut() {
+  return NextResponse.json({ error: "Your session has ended. Log in again." }, { status: 401 });
+}
+
+export function bad(error: string, status = 400) {
+  return NextResponse.json({ error }, { status });
+}
+
+/** Sample shops use 90000000xx numbers. Those can't be dialled. */
+export const isPlaceholder = (phone: string | null) => !phone || /^90000000\d\d$/.test(phone);
 
 /**
  * Bolna fills params with "%(name)s" templates. When the LLM skips an optional param
@@ -49,6 +47,11 @@ export async function params(req: NextRequest): Promise<Record<string, unknown>>
   }
 }
 
+/** JSON body for dashboard APIs; an unreadable body is an empty object. */
+export async function body<T = Record<string, unknown>>(req: NextRequest): Promise<Partial<T>> {
+  return ((await req.json().catch(() => ({}))) ?? {}) as Partial<T>;
+}
+
 /** Last 10 digits of an Indian mobile number, or null. */
 export function phone10(v: unknown): string | null {
   const s = clean(v);
@@ -57,4 +60,15 @@ export function phone10(v: unknown): string | null {
   return digits.length >= 10 ? digits.slice(-10) : null;
 }
 
+/** Whole rupees from user input ("4,800", "Rs 4800"), or null. */
+export function rupeesIn(v: unknown): number | null {
+  if (v === undefined || v === null || v === "") return null;
+  const n = Math.round(Number(String(v).replace(/[^\d.]/g, "")));
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
 export const rupees = (n: number) => `Rs ${n.toLocaleString("en-IN")}`;
+
+export function istToday() {
+  return new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10);
+}

@@ -8,9 +8,11 @@
     "build": "next build",
     "start": "next start",
     "db:setup": "node scripts/db-setup.mjs",
-    "test:agent": "node scripts/simulate-call.mjs"
+    "test:agent": "node scripts/simulate-call.mjs",
+    "prompts": "node scripts/build-prompts.mjs"
   },
   "dependencies": {
+    "lucide-react": "^0.468.0",
     "next": "15.5.28",
     "pg": "8.16.3",
     "react": "19.1.1",

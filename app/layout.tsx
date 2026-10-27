@@ -1,9 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Beat",
-  description: "A voice agent that calls kirana stores, takes restock orders and payment promises, and logs them for the distributor.",
+  title: "Beat · Voice order desk for FMCG distributors",
+  description: "Beat phones every kirana shop on your route in Kannada, Hindi, Telugu, Tamil or Malayalam, takes the restock order, applies your schemes and follows up on credit.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#202820",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Courier+Prime:wght@400;700&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=Noto+Sans+Kannada:wght@400;600&family=Noto+Sans+Devanagari:wght@400;600&family=Noto+Sans+Telugu:wght@400;600&family=Noto+Sans+Tamil:wght@400;600&family=Noto+Sans+Malayalam:wght@400;600&family=Courier+Prime:wght@400;700&display=swap"
         />
       </head>
       <body>{children}</body>

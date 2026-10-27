@@ -30,3 +30,11 @@ export async function one<T extends QueryResultRow = QueryResultRow>(text: strin
   const rows = await q<T>(text, params);
   return rows[0] ?? null;
 }
+
+/** Updates a row the distributor owns. Column names come from our validators, never from the request. */
+export async function updateOwned(table: "shops" | "products", id: number, distributorId: number, fields: Record<string, unknown>) {
+  const keys = Object.keys(fields);
+  if (!keys.length) return one(`select * from ${table} where id = $1 and distributor_id = $2`, [id, distributorId]);
+  const sets = keys.map((k, i) => `${k} = $${i + 3}`).join(", ");
+  return one(`update ${table} set ${sets} where id = $1 and distributor_id = $2 returning *`, [id, distributorId, ...keys.map((k) => fields[k])]);
+}
