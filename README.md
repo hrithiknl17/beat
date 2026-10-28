@@ -2,6 +2,35 @@
 
 A voice order desk for FMCG distributors in India, built on [Bolna](https://bolna.ai).
 
+**Live:** https://beat-flame.vercel.app
+
+## For judges
+
+**What it is.** A Bolna voice agent that phones kirana shops in Kannada and English and takes their weekly restock order, the job a distributor's salesman does on foot today. Orders, payment promises and callbacks land on the distributor's dashboard while the call is still going.
+
+**Try it in two minutes.**
+
+1. Open https://beat-flame.vercel.app and create an account (any email works, nothing is sent).
+2. On the dashboard, press **Load starter catalog** (25 kirana products, with schemes and an out-of-stock line), then **Use 5 sample shops** (Bengaluru shops with last week's order and some overdue credit).
+3. Walk through the sections: Live beat, Orders, Calls, Shops, Products, Payments, Settings. Move an order through packed → out for delivery → delivered on credit, and watch the shop's balance change in Payments.
+
+Every account is separate, so nothing you do touches anyone else's data.
+
+**About live calls.** The Bolna account behind the demo is on a trial plan, which only dials verified numbers, so **Call** won't ring your phone. The demo video shows a real call end to end. To run one yourself, deploy your own copy (below) with your Bolna key, or play a full call through the API locally with `npm run test:agent`.
+
+**What to look at in the code.**
+
+| Where | What |
+| --- | --- |
+| `app/api/agent/*` | The five tools the Bolna agent calls mid-conversation: shop context, place order, payment promise, callback, register a new shop |
+| `app/api/agent/order/route.ts` | Pricing on the server: stock checks, substitutes, schemes, totals. The agent only sends `CODE:qty`, so it can't misprice an order |
+| `lib/agent.ts` | Works out which shop and which account a call belongs to (outbound, inbound to a Beat number, or an unknown caller) |
+| `app/api/webhooks/bolna` | Post-call webhook: transcript, recording, outcome |
+| `scripts/build-prompts.mjs` | Generates the agent prompt and welcome line per language |
+| `db/schema.sql` | Multi-tenant schema: every row is scoped to a distributor |
+
+**Why Kannada and English.** We're in Bengaluru, so we started with how shopkeepers here actually talk. Each extra language is one more Bolna agent: prompts for Hindi, Telugu, Tamil and Malayalam are already in `bolna/`, and calls are routed by each shop's language.
+
 Distributors send salesmen to visit kirana shops on a fixed route (a "beat") to take restock orders. Beat phones each shop instead. It's built in Bengaluru for Bengaluru: it speaks everyday Kannada and switches to English when the shopkeeper does. Calls are routed by each shop's language, so Hindi, Telugu, Tamil and Malayalam are one more Bolna agent each (prompts for all five are in `bolna/`). On every call it:
 
 - greets the owner by name and reads back the last order
